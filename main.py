@@ -1,10 +1,10 @@
+from asyncio.windows_events import NULL
 import json
 import requests
 import re
 import time
 
 def get_dat():
-    # 请求头
     header={
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'
                     'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -16,9 +16,9 @@ def get_dat():
                         'q=0.9,image/webp,image/apng,*/*;'
                     'q=0.8,application/signed-exchange;v=b3;q=0.9',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',  }
-    # 集思录可转债上新url
+
     newUrl ="https://www.jisilu.cn/data/cbnew/pre_list/?___jsl=LST___t=1645434599859"
-    response = requests.get(newUrl)
+    response = requests.get(newUrl,headers=header)
     data = response.content.decode("utf-8")
     dat = json.loads(data)
 
@@ -47,35 +47,34 @@ def get_dat():
         lst_data.append(lst_dat)
     return lst_data
 
-def retimelist(data):   #获取新债申购时间信息
-    timelist = []
+def getNameTime(data):
+    list = {}
     for dat in data:
         if dat[2].find("申购") >= 0:
             spattern = re.compile(r'\d+-\d+-\d+申购')
             stime = spattern.findall(dat[2])
-            timelist.append(stime)
-    return timelist
+            list[dat[1]] = stime      
+    return list
 
-def server_push(timelist): #server酱推送
-    pushurl = "https://sctapi.ftqq.com/****************.send" # **************** 填写server酱的SendKey
+def server_push(list):
+    todayNamelist = []
+    namestring = ""
+    pushurl = "https://sctapi.ftqq.com/************.send"   #填server酱SendKey
     today = time.strftime("%Y-%m-%d",time.localtime())
+    for name in list.keys():
+        if list[name][0][:-2] == today:
+            todayNamelist.append(name)
+            namestring += name + "\n"
+
+    count = len(todayNamelist)
+    print(count)
     datas = {
-        'title':"新债申购提醒",                                #推送消息内容(详见server酱)
-        'desp':"""                                                      
-        # 今日有新债申购
-
-        ```python
-        print("hello the world")
-        ```
-
-
-
-        """}
-    for one in timelist:
-        if one[0][:-2] == today:
-            requests.post(pushurl,data=datas)
-
-def go(arg1,arg2):
+            'title':"今日共有 "+ str(count) +" 支新债",
+            'desp':namestring}        
+    requests.post(pushurl,data=datas)
+            
+if __name__ == '__main__':
     data = get_dat()
-    time_list = retimelist(data)
-    server_push(time_list)
+    list = getNameTime(data)
+    server_push(list)
+
