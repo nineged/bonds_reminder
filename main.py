@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import json
 import requests
 import re
@@ -59,7 +58,7 @@ def getNameTime(data):
 def server_push(list):
     todayNamelist = []
     namestring = ""
-    pushurl = "https://sctapi.ftqq.com/************.send"   #填server酱SendKey
+    pushurl = "https://sctapi.ftqq.com/**********************.send" #server酱SendKey
     today = time.strftime("%Y-%m-%d",time.localtime())
     for name in list.keys():
         if list[name][0][:-2] == today:
@@ -72,9 +71,8 @@ def server_push(list):
             'title':"今日共有 "+ str(count) +" 支新债",
             'desp':namestring}        
     requests.post(pushurl,data=datas)
-            
-if __name__ == '__main__':
+
+def go(arg1,arg2):
     data = get_dat()
     list = getNameTime(data)
     server_push(list)
-
