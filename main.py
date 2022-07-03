@@ -66,11 +66,11 @@ def server_push(list):
             namestring += name + "\n"
 
     count = len(todayNamelist)
-    print(count)
     datas = {
             'title':"今日共有 "+ str(count) +" 支新债",
-            'desp':namestring}        
-    requests.post(pushurl,data=datas)
+            'desp':namestring}
+    if count:
+        requests.post(pushurl,data=datas)
 
 def go(arg1,arg2):
     data = get_dat()
